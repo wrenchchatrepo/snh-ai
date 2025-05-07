@@ -40,7 +40,7 @@ LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %
 
 # --- Axiom Logging Configuration (if used) ---
 AXIOM_TOKEN = os.getenv("AXIOM_TOKEN") # Changed from AXIOM_API_KEY based on user feedback
-AXIOM_DATASET_NAME = os.getenv("AXIOM_DATASET_NAME") # e.g., "snh-ai-pipeline"
+AXIOM_DATASET_NAME = "snh-ai" # Hardcoded as per user feedback, not a secret
 
 # --- ML Model Configuration ---
 # For KMeans clustering

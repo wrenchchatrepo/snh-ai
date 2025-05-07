@@ -1,3 +1,4 @@
 pandas>=1.5.0
 supabase>=1.0.0
 python-dotenv>=0.20.0
+axiom-py>=0.4.0 # For Axiom logging integration

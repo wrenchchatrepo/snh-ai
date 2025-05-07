@@ -40,7 +40,7 @@ try:
     # Check all relevant keys from config.py
     keys_to_check = [
         'RAW_DATA_CSV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ANON_KEY', 'SUPABASE_DB_PASSWORD',
-        'AXIOM_API_KEY', 'AXIOM_DATASET_NAME', 
+        'AXIOM_TOKEN', 'AXIOM_DATASET_NAME', 
         'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET',
         'OUTPUT_DB_TABLE_NAME', 'LOG_LEVEL', 'LOG_FILE', 'LOG_FORMAT',
         'MAX_CLUSTERS_FOR_ELBOW', 'RANDOM_STATE'
@@ -50,8 +50,8 @@ try:
         value = getattr(config, key, '!!! NOT FOUND IN CONFIG !!!')
         value_type = type(value).__name__
         # For sensitive keys, don't print the value if it's a string and not 'None' or 'Not Found'
-        if isinstance(value, str) and key in ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_DB_PASSWORD', 'AXIOM_API_KEY', 'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET', 'SUPABASE_ANON_KEY']:
-            display_value = f"'{'******' if value and value != '!!! NOT FOUND IN CONFIG !!!' else value}'"
+        if isinstance(value, str) and key in ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_DB_PASSWORD', 'AXIOM_TOKEN', 'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET', 'SUPABASE_ANON_KEY']:
+            display_value = f"'******' if value and value != '!!! NOT FOUND IN CONFIG !!!' else value"
         else:
             display_value = f"'{value}'"
         

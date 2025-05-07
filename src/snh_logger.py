@@ -1,6 +1,9 @@
 import logging
 import os
 import sys
+import traceback
+import axiom_py # Correct import based on axiom-py docs
+from axiom_py.logging import AxiomHandler # Correct import based on axiom-py docs
 
 # Adjust path to import config from parent directory of src/
 # This assumes config.py is in dev/snh-ai/ and snh_logger.py is in dev/snh-ai/src/
@@ -31,7 +34,29 @@ if hasattr(project_config, 'LOG_FILE') and project_config.LOG_FILE:
             os.makedirs(LOG_DIR)
         except OSError as e:
             if not os.path.isdir(LOG_DIR): 
-                sys.stderr.write(f"Error: Could not create log directory {LOG_DIR}. {e}\n")
+                sys.stderr.write(f"Error: Could not create log directory {LOG_DIR}. {e}\\n")
+
+# --- Axiom Client Initialization ---
+# axiom_py.Client() attempts to load credentials (AXIOM_TOKEN, AXIom_ORG_ID, AXIOM_URL) from environment variables
+# These env vars should be loaded by config.py via dotenv from the .env file
+axiom_py_client = None
+if hasattr(project_config, 'AXIOM_TOKEN') and project_config.AXIOM_TOKEN and \
+   hasattr(project_config, 'AXIOM_DATASET_NAME') and project_config.AXIOM_DATASET_NAME:
+    try:
+        # Initialize the client. It will use env vars automatically if set.
+        axiom_py_client = axiom_py.Client() 
+        # You could add a check here, e.g., client.datasets.get(project_config.AXIOM_DATASET_NAME)
+        # to ensure the token/dataset are valid, but it adds an API call on startup.
+        # Let's assume successful init means the handler *can* be created.
+        # Actual sending errors will be handled by the logging framework/handler.
+        print("DEBUG: Axiom client object created (credentials likely loaded from env).") # DEBUG - remove later
+    except Exception as e_axiom:
+        sys.stderr.write(f"ERROR: Failed to initialize Axiom client object: {e_axiom}\\n")
+        traceback.print_exc(file=sys.stderr)
+        axiom_py_client = None # Ensure client is None if init fails
+else:
+    print("DEBUG: Axiom token or dataset name not configured in config.py. Skipping Axiom handler setup.") # DEBUG - remove later
+    pass
 
 _loggers = {}
 
@@ -77,9 +102,23 @@ def get_logger(name="SNH-AI", level=None, log_file_override=None, log_format_ove
                 fh.setFormatter(formatter)
                 logger.addHandler(fh)
             except Exception as e:
-                sys.stderr.write(f"Error creating file handler for {effective_log_file}: {e}\n")
-    
-    logger.propagate = False
+                sys.stderr.write(f"Error creating file handler for {effective_log_file}: {e}\\n")
+
+        # Axiom Handler - add only if client initialized successfully and not already present
+        if axiom_py_client and not any(isinstance(h, AxiomHandler) for h in logger.handlers):
+            try:
+                axiom_handler = AxiomHandler(
+                    client=axiom_py_client,
+                    dataset=project_config.AXIOM_DATASET_NAME,
+                    level=numeric_level # Use the same level as other handlers
+                )
+                logger.addHandler(axiom_handler)
+                # print(f"DEBUG: Added Axiom handler for logger '{name}' to dataset '{project_config.AXIOM_DATASET_NAME}'.") # DEBUG
+            except Exception as e_axiom_handler:
+                 sys.stderr.write(f"Error adding Axiom handler: {e_axiom_handler}\\n")
+                 traceback.print_exc(file=sys.stderr)
+        
+        logger.propagate = False
     
     _loggers[name] = logger
     return logger
@@ -127,4 +166,12 @@ if __name__ == "__main__":
     else:
         print("Default file logging (project_config.LOG_FILE) is not configured or config.py was not loaded.")
     
-    print("\nsnh_logger.py test finished.")
+    print("\\nsnh_logger.py test finished.")
+    if axiom_py_client:
+        print("\\n--- Axiom Client Status ---")
+        # Ensure dataset name exists in config before printing
+        axiom_ds = getattr(project_config, 'AXIOM_DATASET_NAME', 'UNKNOWN (Not Configured)')
+        print(f"Axiom client object created: YES (targeting dataset '{axiom_ds}')")
+    else:
+         print("\\n--- Axiom Client Status ---")
+         print("Axiom client object created: NO (check AXIOM_TOKEN/AXIOM_DATASET_NAME in .env/config.py)")
