@@ -10,7 +10,8 @@ This document tracks the history of database tables created and modified by the 
 | 2025-05-07 | `cleaned_customer_data` | Data Load (Replace)    | `src/clean.py`                                     | Loaded 60 cleaned records from raw_customer_data. Existing data cleared before load. Missing values handled, no duplicates removed. |
 | 2025-05-07 | `transformed_customer_data` | Schema: Table Creation | `Manual DDL via Supabase SQL Editor`                 | Schema for transformed data (scaled numerics, OHE categoricals). Columns: customer_id (PK), age_scaled, annual_income_scaled, total_transactions, region_aztec, region_celtic, region_indus, region_nomad, transformed_at. |
 | 2025-05-07 | `transformed_customer_data` | Data Load (Replace)    | `src/transform.py`                                     | Loaded 60 transformed records from cleaned_customer_data. Existing data cleared before load.                           |
-| YYYY-MM-DD | `customer_segments`     | Table Creation         | `src/ml_model.py`, `src/presentation.py`             | Final data with customer segment `pattern_id`. Expected record count: ~60.                                             |
+| 2025-05-07 | `customer_segments`     | Schema: Table Creation | `Manual DDL via Supabase SQL Editor`                 | Schema for final customer segments. Columns: customer_id (PK), pattern_id, assigned_at.                                |
+| 2025-05-07 | `customer_segments`     | Data Load (Replace)    | `src/ml_model.py`                                    | Loaded 60 customer segment assignments (pattern_id) using KMeans (k=6). Existing data cleared before load.                |
 |            |                         |                        |                                                      |                                                                                                                         |
 
 **Notes:**
