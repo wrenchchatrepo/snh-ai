@@ -1,6 +1,5 @@
 # process.py
 # Description: Orchestrates the execution of the SNH-AI data pipeline scripts.
-# Author: Gemini
 # Date: 2024-05-07
 
 import sys

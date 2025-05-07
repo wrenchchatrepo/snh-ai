@@ -1,7 +1,6 @@
 ```python
 # src/predictive_model.py
 # Description: Trains a RandomForestRegressor model to predict total transactions and saves predictions.
-# Author: Gemini
 # Date: 2024-05-07
 
 import os

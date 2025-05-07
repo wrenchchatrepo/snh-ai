@@ -5,10 +5,10 @@ This project implements an end-to-end data pipeline to extract customer data, tr
 ## Overview
 
 The pipeline consists of the following main stages:
-1.  **Data Extraction**: Retrieves customer data from a source.
-2.  **Data Transformation**: Cleans, scales, and encodes the data.
+1.  **Data _E_xtraction**: Retrieves customer data from a source.
+2.  **Data _T_ransformation**: Cleans, scales, and encodes the data.
 3.  **Machine Learning**: Applies a clustering model to identify patterns.
-4.  **Data Loading**: Loads the processed data with pattern labels to a destination.
+4.  **Data _L_oading**: Loads the processed data with pattern labels to a destination.
 
 ## Project Structure
 
@@ -56,6 +56,37 @@ snh-ai/
 ## Usage
 
 (Instructions on how to run the pipeline to be added)
+
+## ML Model Details
+
+### Customer Segmentation (KMeans)
+
+The pipeline uses KMeans clustering to identify customer segments based on the transformed data (`age_scaled`, `annual_income_scaled`, `total_transactions`, and one-hot encoded `region`).
+
+#### Elbow Method for Optimal k
+
+The optimal number of clusters (`k`) was determined using the elbow method, analyzing the Sum of Squared Errors (SSE) and the ratio of proportional change in `k` to the proportional decrease in SSE.
+
+| k  | SSE      | Decrease in SSE | Ratio = (% Incr k) / (% Decr SSE) |
+| :- | :------- | :-------------- | :-------------------------------- |
+| 2  | 1294.41  | ---             | ---                               |
+| 3  | 657.65   | 636.76          | 2.03                              |
+| 4  | 400.67   | 256.98          | 1.28                              |
+| 5  | 274.99   | 125.68          | 1.06                              |
+| 6  | 182.96   | 92.03           | **0.75**                          |
+| 7  | 146.14   | 36.82           | 0.99                              |
+| 8  | 122.85   | 23.29           | 1.05                              |
+| 9  | 90.56    | 32.29           | 0.54                              |
+| 10 | 76.60    | 13.96           | 0.81                              |
+
+Based on the analysis (lowest ratio before a consistent increase, ignoring the outlier at k=9), `optimal_k = 6` was selected and used for the final clustering. The results mapping `customer_id` to `pattern_id` (0-5) are stored in the `customer_segments` table.
+
+### Predictive Models (RandomForestRegressor)
+
+Two RandomForestRegressor models were trained using `age` and one-hot encoded `region` features:
+**Predicting `total_transactions`**
+
+Model evaluation metrics (MSE, R2) are logged during the `src/predictive_model.py` script execution. The trained models and preprocessors are saved to the `models/` directory.
 
 ## Gemini Code Assistant Tools Mapping
 
