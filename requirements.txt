@@ -3,3 +3,4 @@ supabase>=1.0.0
 python-dotenv>=0.20.0
 axiom-py>=0.4.0 # For Axiom logging integration
 numpy>=1.22.0 # Often required by pandas/sklearn, good to be explicit
+scikit-learn>=1.0.0 # For scaling, encoding, and ML models

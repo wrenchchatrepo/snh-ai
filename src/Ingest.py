@@ -89,12 +89,13 @@ def extract_data_from_csv(csv_path: str) -> pd.DataFrame | None:
         return None
 
 def get_supabase_client() -> Client | None:
+    """Initializes and returns a Supabase client."""
     logger.info("Initializing Supabase client.")
-    if not config.SUPABASE_URL or not config.SUPABASE_SERVICE_ROLE_KEY:
+    if not config.SUPABASE_URL or not config.SUPABASE_SERVICE_ROLE:
         logger.error("Supabase URL or Service Role Key is not configured. Check .env and config.py.")
         return None
     try:
-        supabase_client: Client = create_client(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE_KEY)
+        supabase_client: Client = create_client(config.SUPABASE_URL, config.SUPABASE_SERVICE_ROLE)
         logger.info("Supabase client initialized successfully.")
         return supabase_client
     except Exception as e:

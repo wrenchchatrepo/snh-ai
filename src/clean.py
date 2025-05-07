@@ -222,6 +222,10 @@ def main():
                 else:
                     logger.info(f"Successfully cleared data from table '{CLEANED_TABLE_NAME}'.")
 
+            # Drop the ingested_at column as it's not in the cleaned table schema
+            logger.info(f"Dropping 'ingested_at' column before loading to '{CLEANED_TABLE_NAME}'.")
+            cleaned_df.drop(columns=['ingested_at'], inplace=True, errors='ignore') # errors='ignore' prevents error if column missing
+
             if not load_data_to_supabase(cleaned_df, CLEANED_TABLE_NAME, supabase):
                 logger.error(f"Failed to load cleaned data into Supabase table '{CLEANED_TABLE_NAME}'.")
             else:

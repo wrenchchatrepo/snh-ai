@@ -16,7 +16,7 @@ load_dotenv()
 # Supabase specific
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON") # Public key for client-side access (loaded from SUPABASE_ANON env var)
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE") # Secret key for server-side/admin access (loaded from SUPABASE_SERVICE_ROLE env var)
+SUPABASE_SERVICE_ROLE = os.getenv("SUPABASE_SERVICE_ROLE") # Secret key for server-side/admin access (loaded from SUPABASE_SERVICE_ROLE env var)
 SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD") # For direct DB connections if needed, or used by Supabase client
 SUPABASE_PROJECT_ID = os.getenv("SUPABASE_PROJECT_ID") # Project ID from Supabase settings
 

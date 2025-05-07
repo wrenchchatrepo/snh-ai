@@ -39,8 +39,8 @@ try:
     
     # Check all relevant keys from config.py
     keys_to_check = [
-        'RAW_DATA_CSV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ANON_KEY', 'SUPABASE_DB_PASSWORD',
-        'AXIOM_TOKEN', 'AXIOM_DATASET_NAME', 
+        'RAW_DATA_CSV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE', 'SUPABASE_ANON_KEY', 'SUPABASE_DB_PASSWORD',
+        'AXIOM_TOKEN', 'AXIOM_DATASET_NAME',
         'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET',
         'OUTPUT_DB_TABLE_NAME', 'LOG_LEVEL', 'LOG_FILE', 'LOG_FORMAT',
         'MAX_CLUSTERS_FOR_ELBOW', 'RANDOM_STATE'
@@ -50,14 +50,18 @@ try:
         value = getattr(config, key, '!!! NOT FOUND IN CONFIG !!!')
         value_type = type(value).__name__
         # For sensitive keys, don't print the value if it's a string and not 'None' or 'Not Found'
-        if isinstance(value, str) and key in ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_DB_PASSWORD', 'AXIOM_TOKEN', 'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET', 'SUPABASE_ANON_KEY']:
+        if isinstance(value, str) and key in ['SUPABASE_SERVICE_ROLE', 'SUPABASE_DB_PASSWORD', 'AXIOM_TOKEN', 'ANTHROPIC_API_KEY', 'GITHUB_PAT', 'SUPABASE_JWT_SECRET', 'SUPABASE_ANON_KEY']:
             display_value = f"'******' if value and value != '!!! NOT FOUND IN CONFIG !!!' else value"
         else:
             display_value = f"'{value}'"
         
         print(f"config.{key}: {display_value} (Type: {value_type})")
         if value is None:
-            print(f"  WARNING: config.{key} is None. Check .env file and config.py os.getenv('{key}').")
+            # Customize warning message slightly for clarity between .env key and config var name
+            env_key_name = key
+            if key == 'SUPABASE_ANON_KEY': env_key_name = 'SUPABASE_ANON'
+            if key == 'SUPABASE_SERVICE_ROLE': env_key_name = 'SUPABASE_SERVICE_ROLE' # This now matches
+            print(f"  WARNING: config.{key} is None. Check .env file key '{env_key_name}' and config.py os.getenv('{env_key_name}').")
         elif value == '!!! NOT FOUND IN CONFIG !!!':
              print(f"  ERROR: config.{key} is not defined in config.py at all.")
 
