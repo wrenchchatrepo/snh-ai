@@ -1,3 +1,4 @@
+```python
 # src/ml_model.py
 # Description: Applies KMeans clustering to identify customer segments.
 # Author: Gemini
@@ -11,6 +12,8 @@ from supabase import create_client, Client
 from sklearn.cluster import KMeans
 # Optional: only if plotting elbow curve directly from script
 # import matplotlib.pyplot as plt
+import joblib # For saving models optionally
+
 
 # Adjust path to import config and snh_logger from parent directory (src)
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -35,6 +38,8 @@ else:
 TRANSFORMED_TABLE_NAME = 'transformed_customer_data'
 SEGMENTS_TABLE_NAME = 'customer_segments'
 REPLACE_EXISTING_SEGMENTS = True # Flag to control replacement
+MODEL_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "models") # Optional: Directory to save trained models
+
 
 # Define columns to be used for clustering
 # Exclude customer_id and any other non-feature columns
@@ -62,7 +67,13 @@ def fetch_transformed_data(supabase_client: Client, table_name: str) -> pd.DataF
     """Fetches all data from the specified transformed data table in Supabase."""
     logger.info(f"Attempting to fetch data from Supabase table: {table_name}")
     try:
-        response = supabase_client.table(table_name).select("*").execute()
+        # Select only the columns needed (PK + features)
+        select_columns = ["customer_id"] + FEATURE_COLS
+        select_query = ", ".join(select_columns)
+        logger.info(f"Selecting columns: {select_query}")
+        
+        response = supabase_client.table(table_name).select(select_query).execute()
+        
         if hasattr(response, 'error') and response.error:
             logger.error(f"Error fetching data from Supabase table '{table_name}': {response.error.message}")
             return None
@@ -70,14 +81,29 @@ def fetch_transformed_data(supabase_client: Client, table_name: str) -> pd.DataF
             df = pd.DataFrame(response.data)
             logger.info(f"Successfully fetched {len(df)} rows from '{table_name}'.")
             # Ensure correct numeric types for feature columns
+            all_cols_found = True
             for col in FEATURE_COLS:
                 if col in df.columns:
-                    # total_transactions and region columns should be numeric already
-                    # scaled columns are float
+                     # Convert relevant columns back to numeric, coercing errors
                      df[col] = pd.to_numeric(df[col], errors='coerce')
                 else:
                     logger.error(f"Expected feature column '{col}' not found in fetched data.")
-                    return None # Essential column missing
+                    all_cols_found = False # Mark as missing
+                    
+            if not all_cols_found:
+                 return None # Exit if essential columns are missing
+
+            # Check for NaNs introduced by coercion
+            if df[FEATURE_COLS].isnull().values.any():
+                logger.warning(f"NaN values found in feature columns after fetch/coerce. Sum:\\n{df[FEATURE_COLS].isnull().sum().to_string()}")
+                # Decide how to handle: drop or impute. Dropping for now.
+                initial_rows = len(df)
+                df.dropna(subset=FEATURE_COLS, inplace=True)
+                logger.warning(f"Dropped {initial_rows - len(df)} rows containing NaN in feature columns.")
+                if df.empty:
+                     logger.error("DataFrame became empty after dropping NaN values from features.")
+                     return pd.DataFrame()
+
             logger.info(f"Data types after fetch and numeric conversion:\\n{df.dtypes.to_string()}")
             return df
         else:
@@ -90,32 +116,23 @@ def fetch_transformed_data(supabase_client: Client, table_name: str) -> pd.DataF
 def find_optimal_k(df: pd.DataFrame, feature_cols: list) -> int:
     """
     Calculates inertia for different values of k and logs them.
-    Currently returns a default k, but logs info for manual elbow method analysis.
+    Currently returns k=6 based on previous analysis, logs info for validation.
     """
     if df.empty or not feature_cols:
         logger.error("Cannot find optimal k with empty data or no feature columns.")
         return 0 # Indicate failure
 
-    logger.info("Calculating KMeans inertia for elbow method...")
+    logger.info("Calculating KMeans SSE (inertia) for elbow method...")
+    # Use only the feature columns for clustering input
     X = df[feature_cols].copy()
 
-    # Check for NaNs created during numeric conversion or originally present
+    # Final check for NaNs - should have been handled by fetch_transformed_data
     if X.isnull().values.any():
-        logger.warning(f"NaN values found in feature columns before clustering. Sum:\\n{X.isnull().sum().to_string()}")
-        # Option: Impute NaNs here (e.g., with mean/median) if they shouldn't exist
-        # X.fillna(X.median(), inplace=True)
-        # logger.info("Filled NaNs with column medians before clustering.")
-        # Option: Drop rows with NaNs
-        initial_rows = len(X)
-        X.dropna(inplace=True)
-        logger.warning(f"Dropped {initial_rows - len(X)} rows with NaN values before clustering.")
-        if X.empty:
-             logger.error("DataFrame became empty after dropping NaN values. Cannot perform clustering.")
-             return 0
+        logger.error("NaN values still present in features before clustering. Aborting k search.")
+        return 0
 
     inertia = {}
     max_k = config.MAX_CLUSTERS_FOR_ELBOW
-    # Ensure we don't try more clusters than samples
     effective_max_k = min(max_k, len(X)) 
     if effective_max_k < 2:
         logger.error(f"Not enough samples ({len(X)}) to test at least 2 clusters.")
@@ -132,29 +149,21 @@ def find_optimal_k(df: pd.DataFrame, feature_cols: list) -> int:
                             random_state=config.RANDOM_STATE)
             kmeans.fit(X)
             inertia[k] = kmeans.inertia_
-            logger.info(f"  k={k}, Inertia={inertia[k]:.2f}")
+            logger.info(f"  k={k}, SSE (Inertia)={inertia[k]:.2f}")
         except Exception as e:
             logger.error(f"Error calculating KMeans for k={k}: {e}", exc_info=True)
             inertia[k] = None # Mark as failed
 
-    # --- Elbow Method Analysis ---
-    # In a real scenario, analyze the logged inertia values (or plot them)
-    # to find the "elbow" point where the rate of decrease sharply changes.
-    # For this example, we'll just log and return a default/placeholder value.
-    logger.info("Elbow method inertia calculation complete. Analyze logged values to determine optimal k.")
-    # Optional: Plotting code (requires matplotlib) could be added here to save a plot.
-
+    logger.info("Elbow method SSE calculation complete. Review logged values.")
+    
     # --- Determine Optimal K ---
-    # This part currently requires manual intervention based on logs/plot.
-    # Let's return a default value for now, e.g., 4.
-    # TODO: Implement logic to automatically suggest k from inertia values.
-    optimal_k = 6 # Changed based on ratio analysis (lowest ratio before increase)
-    logger.warning(f"Using optimal k = {optimal_k} based on ratio analysis. ANALYZE INERTIA LOGS/PLOT TO CONFIRM.")
+    optimal_k = 6 # Set based on previous ratio analysis
+    logger.warning(f"Using optimal k = {optimal_k} based on prior analysis. Review SSE/elbow plot if needed.")
 
     # Ensure optimal_k is valid before returning
     if optimal_k not in k_range:
          logger.error(f"Selected optimal k ({optimal_k}) is outside the tested/valid range {list(k_range)}. Defaulting to {min(k_range)}.")
-         optimal_k = min(k_range) # Fallback to the minimum tested k
+         optimal_k = min(k_range) 
 
     return optimal_k
 
@@ -168,40 +177,39 @@ def assign_clusters(df: pd.DataFrame, feature_cols: list, optimal_k: int) -> pd.
         return None
 
     logger.info(f"Fitting final KMeans model with k={optimal_k}...")
-    X = df[feature_cols].copy()
-    original_indices = df.index # Keep original indices for mapping back
-
-    # Handle potential NaNs again before final clustering, just in case
+    # Use only feature columns and rows verified not to have NaNs in features
+    X = df[feature_cols].copy() 
+    
+    # Re-verify NaNs just before fit (should not happen if fetch handled it)
     if X.isnull().values.any():
-        logger.warning("NaN values found in feature columns before final clustering. Dropping rows.")
-        rows_before_drop = len(X)
-        X.dropna(inplace=True)
-        if X.empty:
-             logger.error("DataFrame became empty after dropping NaN values. Cannot perform final clustering.")
-             return None
-        # Keep track of indices that remain after dropping NaNs
-        valid_indices = X.index
-        logger.warning(f"Dropped {rows_before_drop - len(X)} rows with NaN values before final clustering.")
-    else:
-        valid_indices = original_indices # Use all original indices if no NaNs dropped
+        logger.error("NaN values detected unexpectedly before final clustering. Aborting.")
+        return None
 
     try:
         kmeans = KMeans(n_clusters=optimal_k,
                         init='k-means++',
                         n_init='auto',
                         random_state=config.RANDOM_STATE)
-        # Fit only on the valid (non-NaN) feature data
-        kmeans.fit(X) 
-        # Predict cluster labels for the same valid data points
-        labels = kmeans.predict(X) 
+        # Fit and get labels for the data points used
+        labels = kmeans.fit_predict(X) 
         logger.info(f"Successfully fitted KMeans and obtained cluster labels. Cluster centers shape: {kmeans.cluster_centers_.shape}")
 
-        # Create result DataFrame using only the valid indices
+        # Create result DataFrame using the index from X (which matches df if no NaNs were dropped in fetch)
         results_df = pd.DataFrame({
-            'customer_id': df.loc[valid_indices, 'customer_id'],
+            'customer_id': df.loc[X.index, 'customer_id'], # Select customer_id based on index of X
             'pattern_id': labels
         })
         logger.info(f"Created results DataFrame with 'customer_id' and 'pattern_id'. Shape: {results_df.shape}")
+        
+        # Optional: Save the fitted KMeans model
+        os.makedirs(MODEL_OUTPUT_DIR, exist_ok=True)
+        model_filename = os.path.join(MODEL_OUTPUT_DIR, f"kmeans_k{optimal_k}_model.joblib")
+        try:
+            joblib.dump(kmeans, model_filename)
+            logger.info(f"Saved KMeans model to {model_filename}")
+        except Exception as e_save:
+            logger.error(f"Error saving KMeans model: {e_save}", exc_info=True)
+
         return results_df
 
     except Exception as e:
@@ -291,7 +299,7 @@ def main():
              logger.error("No feature columns available for clustering. Aborting.")
              sys.exit(1)
              
-        # Find optimal k (currently logs inertia and returns a placeholder)
+        # Find optimal k (currently logs inertia and returns k=6)
         optimal_k = find_optimal_k(transformed_df, actual_feature_cols)
         if optimal_k == 0: # Check if optimal_k calculation failed
              logger.error("Failed to determine optimal k. Aborting.")
@@ -324,3 +332,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
