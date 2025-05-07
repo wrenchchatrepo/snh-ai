@@ -1,4 +1,9 @@
 # config.py
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # --- Database Configuration ---
 # Example for PostgreSQL (to be filled with Supabase details)
@@ -8,9 +13,11 @@
 # DB_PORT = "your_db_port"
 # DB_NAME = "your_db_name"
 
-# Supabase specific (if using Supabase client library)
-# SUPABASE_URL = "your_supabase_url"
-# SUPABASE_KEY = "your_supabase_key"
+# Supabase specific
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY") # Public key for client-side access
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") # Secret key for server-side/admin access
+SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD") # For direct DB connections if needed, or used by Supabase client
 
 # --- Data Paths ---
 # Path to the raw data CSV file
@@ -28,20 +35,23 @@ OUTPUT_DB_TABLE_NAME = "customer_segments"
 # --- Logging Configuration ---
 LOG_LEVEL = "INFO"  # e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL
 LOG_FILE = "logs/snh_ai_pipeline.log"
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s"
+
+# --- Axiom Logging Configuration (if used) ---
+AXIOM_API_KEY = os.getenv("AXIOM_API_KEY")
+AXIOM_DATASET_NAME = os.getenv("AXIOM_DATASET_NAME") # e.g., "snh-ai-pipeline"
 
 # --- ML Model Configuration ---
 # For KMeans clustering
 MAX_CLUSTERS_FOR_ELBOW = 10  # Max number of clusters to test for the elbow method
 
 # --- API Keys (loaded from .env, not hardcoded here) ---
-# ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-# GITHUB_PAT = os.getenv("GITHUB_PAT")
-# SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
-# SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-# SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
-# SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+GITHUB_PAT = os.getenv("GITHUB_PAT")
+# Supabase keys are loaded under Database Configuration
 
+# Optional: Supabase JWT Secret if needed for custom token generation/verification
+SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
 
 # --- Other Configurations ---
 # Example: RANDOM_STATE for reproducibility in ML models

@@ -120,6 +120,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Project-specific ignores
+logs/
+
 # environments
 .env
 .venv
