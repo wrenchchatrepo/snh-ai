@@ -12,6 +12,8 @@ This document tracks the history of database tables created and modified by the 
 | 2025-05-07 | `transformed_customer_data` | Data Load (Replace)    | `src/transform.py`                                     | Loaded 60 transformed records from cleaned_customer_data. Existing data cleared before load.                           |
 | 2025-05-07 | `customer_segments`     | Schema: Table Creation | `Manual DDL via Supabase SQL Editor`                 | Schema for final customer segments. Columns: customer_id (PK), pattern_id, assigned_at.                                |
 | 2025-05-07 | `customer_segments`     | Data Load (Replace)    | `src/ml_model.py`                                    | Loaded 60 customer segment assignments (pattern_id) using KMeans (k=6). Existing data cleared before load.                |
+| 2025-05-07 | `transaction_predictions` | Schema: Table Creation | `Manual DDL via Supabase SQL Editor`                | Schema for transaction predictions. Columns: customer_id (PK), predicted_total_transactions, predicted_at.              |
+| 2025-05-07 | `transaction_predictions` | Data Load (Replace)    | `src/predictive_model.py`                            | Loaded 60 transaction predictions using RandomForestRegressor. Existing data cleared before load.                       |
 |            |                         |                        |                                                      |                                                                                                                         |
 
 **Notes:**
