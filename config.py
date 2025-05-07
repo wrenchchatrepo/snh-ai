@@ -15,9 +15,10 @@ load_dotenv()
 
 # Supabase specific
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY") # Public key for client-side access
-SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") # Secret key for server-side/admin access
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON") # Public key for client-side access (loaded from SUPABASE_ANON env var)
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE") # Secret key for server-side/admin access (loaded from SUPABASE_SERVICE_ROLE env var)
 SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD") # For direct DB connections if needed, or used by Supabase client
+SUPABASE_PROJECT_ID = os.getenv("SUPABASE_PROJECT_ID") # Project ID from Supabase settings
 
 # --- Data Paths ---
 # Path to the raw data CSV file
@@ -38,7 +39,7 @@ LOG_FILE = "logs/snh_ai_pipeline.log"
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s"
 
 # --- Axiom Logging Configuration (if used) ---
-AXIOM_API_KEY = os.getenv("AXIOM_API_KEY")
+AXIOM_TOKEN = os.getenv("AXIOM_TOKEN") # Changed from AXIOM_API_KEY based on user feedback
 AXIOM_DATASET_NAME = os.getenv("AXIOM_DATASET_NAME") # e.g., "snh-ai-pipeline"
 
 # --- ML Model Configuration ---
