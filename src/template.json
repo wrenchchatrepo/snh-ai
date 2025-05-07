@@ -1,0 +1,102 @@
+```json
+{
+  "description": "A template for Python scripts in the SNH-AI project.",
+  "structure": [
+    {
+      "section": "Header Comment",
+      "content": [
+        "# script_name.py",
+        "# Description: Briefly describe the purpose of this script.",
+        "# Author: Your Name",
+        "# Date: YYYY-MM-DD"
+      ]
+    },
+    {
+      "section": "Imports",
+      "content": [
+        "import argparse",
+        "import os",
+        "import sys",
+        "",
+        "# Third-party imports (e.g., pandas, numpy, sklearn)",
+        "# import pandas as pd",
+        "",
+        "# Local application/library specific imports",
+        "from .. import config  # If script is in src/ and config.py is in root",
+        "from . import logging as snh_logging # Or from src import logging as snh_logging",
+        "",
+        "# If config needs to be accessed directly by its path for some reason:",
+        "# import sys",
+        "# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))",
+        "# import config"
+      ]
+    },
+    {
+      "section": "Global Variables / Constants (if any)",
+      "content": [
+        "logger = snh_logging.get_logger(__name__)"
+      ]
+    },
+    {
+      "section": "Main Function",
+      "name": "main",
+      "parameters": ["args=None"],
+      "body": [
+        "logger.info(f'Starting script: {os.path.basename(__file__)}')",
+        "if args:",
+        "    logger.debug(f'Arguments received: {args}')",
+        "",
+        "try:",
+        "    # --- Configuration Loading ---",
+        "    # Example: data_path = config.RAW_DATA_CSV",
+        "    # logger.info(f'Using data path: {data_path}')",
+        "",
+        "    # --- Core Script Logic ---",
+        "    # Implement the main functionality of the script here.",
+        "    # e.g., data_extraction(), data_transformation(), model_training()",
+        "    logger.info('Core logic placeholder.')",
+        "",
+        "    # --- Successful Completion ---",
+        "    logger.info('Script completed successfully.')",
+        "",
+        "except FileNotFoundError as e:",
+        "    logger.error(f'File not found: {e}', exc_info=True)",
+        "    sys.exit(1)",
+        "except Exception as e:",
+        "    logger.error(f'An unexpected error occurred: {e}', exc_info=True)",
+        "    sys.exit(1)"
+      ]
+    },
+    {
+      "section": "Helper Functions (if any)",
+      "content": [
+        "def example_helper_function():",
+        "    \"\"\"Docstring for helper function.\"\"\"",
+        "    logger.debug('Helper function called.')",
+        "    pass"
+      ]
+    },
+    {
+      "section": "Script Execution Block",
+      "content": [
+        "if __name__ == \"__main__\":",
+        "    # Argument parsing (optional, example shown)",
+        "    # parser = argparse.ArgumentParser(description='Description of your script.')",
+        "    # parser.add_argument('--input', type=str, help='Input file path', required=False)",
+        "    # parser.add_argument('--output', type=str, help='Output file path', required=False)",
+        "    # parsed_args = parser.parse_args()",
+        "",
+        "    # main(parsed_args) # If using argparse",
+        "    main() # If not using argparse or passing None"
+      ]
+    }
+  ],
+  "notes": [
+    "Ensure `logging.py` is correctly imported and `get_logger(__name__)` is used.",
+    "Adapt imports based on the script's location and dependencies.",
+    "Use try/except blocks for robust error handling.",
+    "Log important steps and potential errors.",
+    "Reference `config.py` for centralized configurations."
+  ]
+}
+```

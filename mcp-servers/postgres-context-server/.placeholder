@@ -1,0 +1,2 @@
+This placeholder file indicates the presence of the postgres-context-server configuration or stubs.
+Actual server setup and configuration details for connecting to a PostgreSQL instance (likely via Supabase) would be managed here or in related scripts.

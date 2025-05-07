@@ -1,0 +1,8 @@
+# This is a placeholder file for the mcp-server-context7 configuration.
+# Configuration details for the following Context7 integrations will be managed here:
+# - https://context7.com/scikit-rf/scikit-rf
+# - https://context7.com/supabase/supabase
+# - https://context7.com/python/cpython
+# - https://context7.com/axiomhq/docs
+# - https://context7.com/pandas-dev/pandas
+# - https://context7.com/jupyter/nbclient
