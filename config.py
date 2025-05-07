@@ -21,8 +21,6 @@ RAW_DATA_CSV = "/Users/dionedge/dev/data_engineer_customer_data.csv"
 # TRANSFORMED_DATA_PATH = PROCESSED_DATA_DIR + "transformed_data.csv"
 # FINAL_DATA_WITH_PATTERNS_PATH = PROCESSED_DATA_DIR + "final_data_with_patterns.csv"
 
-# Output path for the final data with pattern labels (if saving to CSV)
-OUTPUT_CSV_PATH = "data/output/customer_segments.csv"
 # Output table name in the database
 OUTPUT_DB_TABLE_NAME = "customer_segments"
 

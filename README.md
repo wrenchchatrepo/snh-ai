@@ -56,3 +56,24 @@ snh-ai/
 ## Usage
 
 (Instructions on how to run the pipeline to be added)
+
+## Gemini Code Assistant Tools Mapping
+
+The following table illustrates the tools and capabilities the Gemini Code Assistant can leverage in relation to the technologies and concepts planned for this project:
+
+| Your Tool/Concept                      | Gemini's Equivalent Tool/Capability                                  | How Gemini Uses It / Contributes                                                                                                |
+| :------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **PostgreSQL / Supabase (Database)**   | `edit_file`, `python` (for `psycopg2`, `supabase-py`)                | Writes Python scripts to connect, query (extract/load data), and manage database interactions. Can help script DB CLI commands. |
+| **GitHub (Version Control)**           | `terminal` (for `git` commands)                                      | Executes Git commands for repo operations (clone, add, commit, push, branch). Can help write PR descriptions.                  |
+| **Context7 Docs / `mcp-server-context7`** | `resolve-library-id`, `get-library-docs`                             | Directly fetches library documentation and code snippets (e.g., for scikit-learn and its modules).                            |
+| &nbsp;&nbsp;&nbsp;&nbsp;↳ scikit-learn (general) | `resolve-library-id`, `get-library-docs`                             | Fetches scikit-learn documentation and examples.                                                                                |
+| &nbsp;&nbsp;&nbsp;&nbsp;↳ scikit_bayes_inference | `resolve-library-id`, `get-library-docs`; `edit_file` (for `bayes-mcp` client) | Fetches general scikit-learn/Bayesian docs; helps write client code for your planned `bayes-mcp`.                            |
+| &nbsp;&nbsp;&nbsp;&nbsp;↳ scikit_random_forest_classifier | `resolve-library-id`, `get-library-docs`                             | Fetches `RandomForestClassifier` documentation from scikit-learn.                                                            |
+| &nbsp;&nbsp;&nbsp;&nbsp;↳ scikit_kmeans      | `resolve-library-id`, `get-library-docs`                             | Fetches `KMeans` documentation, including for elbow method.                                                                     |
+| **Python (Core Language)**             | `edit_file`, `python` (via `default_api.run_code`), `diagnostics`      | Writes, understands, executes snippets, and debugs Python code for all project scripts.                                         |
+| **Axiom Logging / `mcp-server-axiom`** | `edit_file`                                                          | Writes Python code (e.g., in `src/logging.py`) to use an Axiom client library for sending logs.                                 |
+| **Pandas (Data Manipulation)**         | `edit_file`, `python`                                                | Writes Python code using `pandas` for data cleaning, transformation, and preparation.                                           |
+| **JupyterLab (Notebooks)**             | `edit_file`                                                          | Generates Python code and Markdown content for Jupyter Notebook cells.                                                          |
+| **`bayes-mcp` (Your Planned Server)**  | `edit_file`, `read_file` (to understand its API)                     | Writes Python client code (e.g., in `src/ml_model.py`) to interact with your running `bayes-mcp` server via HTTP/JSON.        |
+| **`secrets-manager` (Your CLI Tool)**  | `read_file` (to understand its usage), provides CLI command          | Reads its README; constructs the `secrets-manager env-file` command for *you* to run locally to populate `.env`.              |
+| **Other Planned Project MCPs** (e.g., `mcp-server-github`, `postgres-context-server` as project components) | `edit_file`, `read_file` (to understand their APIs if documented)    | Helps write client code for your Python scripts to interact with these if they are built and run as services.                |
