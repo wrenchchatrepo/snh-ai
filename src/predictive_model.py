@@ -1,6 +1,6 @@
 ```python
 # src/predictive_model.py
-# Description: Trains RandomForestRegressor models to predict income and transactions.
+# Description: Trains a RandomForestRegressor model to predict total transactions.
 # Author: Gemini
 # Date: 2024-05-07
 
@@ -39,7 +39,7 @@ MODEL_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "models") # Optional: Directory to
 
 # Features and Targets
 FEATURE_COLS = ['age', 'region']
-TARGET_COL_INCOME = 'annual_income'
+# TARGET_COL_INCOME = 'annual_income' # Removed income prediction
 TARGET_COL_TRANSACTIONS = 'total_transactions'
 
 def get_supabase_client() -> Client | None:
@@ -58,7 +58,7 @@ def get_supabase_client() -> Client | None:
 
 def fetch_cleaned_data(supabase_client: Client, table_name: str) -> pd.DataFrame | None:
     """Fetches necessary data from the cleaned data table."""
-    required_cols = FEATURE_COLS + [TARGET_COL_INCOME, TARGET_COL_TRANSACTIONS]
+    required_cols = FEATURE_COLS + [TARGET_COL_TRANSACTIONS] # Removed TARGET_COL_INCOME
     select_query = ", ".join(required_cols)
     logger.info(f"Attempting to fetch columns ({select_query}) from table: {table_name}")
     try:
@@ -72,7 +72,7 @@ def fetch_cleaned_data(supabase_client: Client, table_name: str) -> pd.DataFrame
             # Ensure correct types
             df['age'] = pd.to_numeric(df['age'], errors='coerce').astype('Int64')
             df['region'] = df['region'].astype(str)
-            df[TARGET_COL_INCOME] = pd.to_numeric(df[TARGET_COL_INCOME], errors='coerce')
+            # df[TARGET_COL_INCOME] = pd.to_numeric(df[TARGET_COL_INCOME], errors='coerce') # Removed income target processing
             df[TARGET_COL_TRANSACTIONS] = pd.to_numeric(df[TARGET_COL_TRANSACTIONS], errors='coerce').astype('Int64')
 
             # Handle potential NaNs introduced by coercion or missing values from cleaning
@@ -187,9 +187,6 @@ def main():
     if cleaned_df is None or cleaned_df.empty:
         logger.critical(f"Failed to fetch or data is empty from {CLEANED_TABLE_NAME}. Aborting.")
         sys.exit(1)
-
-    # Train model for annual_income
-    train_evaluate_model(cleaned_df, FEATURE_COLS, TARGET_COL_INCOME, "income_predictor")
 
     # Train model for total_transactions
     train_evaluate_model(cleaned_df, FEATURE_COLS, TARGET_COL_TRANSACTIONS, "transactions_predictor")
