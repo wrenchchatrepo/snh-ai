@@ -6,3 +6,4 @@ numpy>=1.22.0 # Often required by pandas/sklearn, good to be explicit
 scikit-learn>=1.0.0 # For scaling, encoding, and ML models
 matplotlib>=3.5.0 # For plotting (e.g., elbow method)
 jupyterlab>=3.0.0 # For running the analysis notebook
+seaborn>=0.11.0 # For enhanced plotting in notebook
